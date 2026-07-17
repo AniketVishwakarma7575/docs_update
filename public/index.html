@@ -29,6 +29,18 @@
       </form>
     </section>
 
+    <section class="panel">
+      <h2>Upload a file</h2>
+      <p class="hint">JPG, PNG, GIF, PDF, or TXT. Maximum size: 5 MB.</p>
+      <form id="upload-form">
+        <label for="file">Choose file</label>
+        <input id="file" name="file" type="file" accept=".jpg,.jpeg,.png,.gif,.pdf,.txt" required>
+        <button type="submit">Upload file</button>
+      </form>
+      <p id="upload-message" role="status"></p>
+      <div id="file-list" class="file-list"></div>
+    </section>
+
     <section>
       <div class="list-heading">
         <h2>Items</h2>

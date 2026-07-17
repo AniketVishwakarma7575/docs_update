@@ -8,6 +8,10 @@ const saveButton = document.querySelector('#save-button');
 const cancelButton = document.querySelector('#cancel-button');
 const count = document.querySelector('#item-count');
 const message = document.querySelector('#message');
+const uploadForm = document.querySelector('#upload-form');
+const uploadInput = document.querySelector('#file');
+const uploadMessage = document.querySelector('#upload-message');
+const fileList = document.querySelector('#file-list');
 
 let items = [];
 
@@ -91,3 +95,39 @@ list.addEventListener('click', async (event) => {
 
 cancelButton.addEventListener('click', resetForm);
 loadItems().catch(() => { message.textContent = 'Could not load items.'; });
+
+async function loadFiles() {
+  const response = await fetch('/api/uploads');
+  const files = await response.json();
+  fileList.innerHTML = files.length
+    ? files.map((file) => `
+      <div class="file-row">
+        <a href="${file.url}">${escapeHtml(file.filename)}</a>
+        <span>${(file.size / 1024).toFixed(1)} KB</span>
+        <button class="danger delete-file" data-filename="${escapeHtml(file.filename)}">Delete</button>
+      </div>`).join('')
+    : '<p class="hint">No uploaded files.</p>';
+}
+
+uploadForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const data = new FormData();
+  data.append('file', uploadInput.files[0]);
+  const response = await fetch('/api/uploads', { method: 'POST', body: data });
+  const result = await response.json();
+  uploadMessage.textContent = response.ok ? 'File uploaded.' : result.error;
+  if (response.ok) {
+    uploadForm.reset();
+    await loadFiles();
+  }
+});
+
+fileList.addEventListener('click', async (event) => {
+  const filename = event.target.dataset.filename;
+  if (!filename || !confirm('Delete this file?')) return;
+  const response = await fetch(`/api/uploads/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+  uploadMessage.textContent = response.ok ? 'File deleted.' : 'Could not delete file.';
+  await loadFiles();
+});
+
+loadFiles().catch(() => { uploadMessage.textContent = 'Could not load files.'; });
