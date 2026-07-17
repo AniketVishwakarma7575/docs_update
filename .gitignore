@@ -1,4 +1,6 @@
 node_modules/
 .env
 data/items.json
+uploads/*
+!uploads/.gitkeep
 npm-debug.log*
