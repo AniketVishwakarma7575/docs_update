@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple CRUD App</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <p class="eyebrow">NODE.JS CRUD</p>
+      <h1>My Items</h1>
+      <p>Create, update, and remove items from one simple dashboard.</p>
+    </header>
+
+    <section class="panel">
+      <h2 id="form-title">Add an item</h2>
+      <form id="item-form">
+        <input id="item-id" type="hidden">
+        <label for="name">Name</label>
+        <input id="name" name="name" maxlength="80" required placeholder="e.g. Write documentation">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" maxlength="300" rows="3" placeholder="Optional details"></textarea>
+        <div class="actions">
+          <button type="submit" id="save-button">Add item</button>
+          <button type="button" id="cancel-button" class="secondary" hidden>Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section>
+      <div class="list-heading">
+        <h2>Items</h2>
+        <span id="item-count">0 items</span>
+      </div>
+      <p id="message" role="status"></p>
+      <div id="item-list" class="item-list"></div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
