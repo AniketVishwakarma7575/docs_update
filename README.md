@@ -35,6 +35,27 @@ npm run dev
 
 Allowed file types: JPG, PNG, GIF, PDF, and TXT. Maximum file size: 5 MB.
 
+### Product CRUD API
+
+- `GET /api/products` — list all products
+- `GET /api/products/:id` — get one product
+- `POST /api/products` — create a product
+- `PUT /api/products/:id` — replace a product
+- `DELETE /api/products/:id` — delete a product
+
+Create or update body:
+
+```json
+{
+  "name": "Laptop",
+  "description": "Work machine",
+  "price": 999.5,
+  "stock": 4
+}
+```
+
+`name` is required, `price` must be a non-negative number, and `stock` must be a non-negative integer.
+
 Create/update JSON body:
 
 ```json
