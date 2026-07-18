@@ -9,6 +9,7 @@ process.env.PRODUCTS_DATA_FILE = path.join(productTestDir, 'products.json');
 const { validateItem, safeUploadName, resolveUploadPath } = require('../server');
 const { server } = require('../server');
 const { validateProduct } = require('../src/productApi');
+const { validateEchoBody } = require('../src/demoApi');
 
 test('validateItem accepts and trims a valid item', () => {
   assert.deepEqual(validateItem({ name: '  Test  ', description: ' Notes ' }), {
@@ -38,6 +39,11 @@ test('validateProduct accepts valid product data', () => {
 test('validateProduct rejects invalid price and stock values', () => {
   assert.equal(validateProduct({ name: 'Laptop', price: -1 }).error, 'Price must be a non-negative number');
   assert.equal(validateProduct({ name: 'Laptop', price: 10, stock: 1.5 }).error, 'Stock must be a non-negative integer');
+});
+
+test('validateEchoBody accepts only a non-empty message', () => {
+  assert.deepEqual(validateEchoBody({ message: '  Hello docs  ' }), { message: 'Hello docs' });
+  assert.equal(validateEchoBody({ message: '   ' }), null);
 });
 
 test('product API supports the complete five-route CRUD lifecycle', async () => {
@@ -71,6 +77,27 @@ test('product API supports the complete five-route CRUD lifecycle', async () => 
     const deleteResponse = await fetch(`${baseUrl}/api/products/${created.id}`, { method: 'DELETE' });
     assert.equal(deleteResponse.status, 204);
     assert.equal((await fetch(`${baseUrl}/api/products/${created.id}`)).status, 404);
+
+    const statusResponse = await fetch(`${baseUrl}/api/demo/status`);
+    assert.equal(statusResponse.status, 200);
+    const statusBody = await statusResponse.json();
+    assert.equal(statusBody.success, true);
+    assert.equal(statusBody.data.status, 'ok');
+
+    const echoResponse = await fetch(`${baseUrl}/api/demo/echo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Hello documentation' }),
+    });
+    assert.equal(echoResponse.status, 200);
+    assert.equal((await echoResponse.json()).data.message, 'Hello documentation');
+
+    const invalidEchoResponse = await fetch(`${baseUrl}/api/demo/echo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '' }),
+    });
+    assert.equal(invalidEchoResponse.status, 400);
   } finally {
     await new Promise((resolve) => server.close(resolve));
     await fs.rm(productTestDir, { recursive: true, force: true });

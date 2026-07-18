@@ -5,6 +5,7 @@ const path = require('node:path');
 const { randomUUID } = require('node:crypto');
 const multer = require('multer');
 const { handleProductApi } = require('./src/productApi');
+const { handleDemoApi } = require('./src/demoApi');
 
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -236,6 +237,7 @@ async function serveStatic(response, pathname) {
 const server = http.createServer(async (request, response) => {
   try {
     const { pathname } = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+    if (await handleDemoApi(request, response, pathname, { sendJson, readJson })) return;
     if (await handleProductApi(request, response, pathname, { sendJson, readJson })) return;
     if (await handleUploads(request, response, pathname)) return;
     if (await handleApi(request, response, pathname)) return;
