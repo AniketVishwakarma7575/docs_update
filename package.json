@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node test/server.test.js"
+    "test": "node test/run-tests.js",
+    "docs:ai-sync": "node scripts/ai-docs-sync.js"
   },
   "engines": {
     "node": ">=18"
