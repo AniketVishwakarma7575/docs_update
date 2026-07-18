@@ -56,6 +56,10 @@ Create or update body:
 
 `name` is required, `price` must be a non-negative number, and `stock` must be a non-negative integer.
 
+### Application statistics
+
+- `GET /api/stats` - return service status, item count, uploaded-file count, uptime, and generation timestamp
+
 Create/update JSON body:
 
 ```json
