@@ -76,3 +76,19 @@ test('product API supports the complete five-route CRUD lifecycle', async () => 
     await fs.rm(productTestDir, { recursive: true, force: true });
   }
 });
+
+test('GET /api/stats returns application statistics', async () => {
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  try {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/api/stats`);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.status, 'ok');
+    assert.equal(typeof body.counts.items, 'number');
+    assert.equal(typeof body.counts.uploadedFiles, 'number');
+    assert.equal(typeof body.uptimeSeconds, 'number');
+    assert.match(body.generatedAt, /^\d{4}-\d{2}-\d{2}T/);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
