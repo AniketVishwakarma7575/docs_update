@@ -137,6 +137,32 @@ async function handleApi(request, response, pathname) {
   return true;
 }
 
+// GET /api/stats - return a lightweight application summary for monitoring/tests.
+async function handleStats(request, response, pathname) {
+  if (pathname !== '/api/stats') return false;
+  if (request.method !== 'GET') {
+    sendJson(response, 405, { error: 'Method not allowed' });
+    return true;
+  }
+
+  const items = await readItems();
+  let uploadedFiles = 0;
+  try {
+    const entries = await fs.readdir(UPLOAD_DIR, { withFileTypes: true });
+    uploadedFiles = entries.filter((entry) => entry.isFile() && entry.name !== '.gitkeep').length;
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+
+  sendJson(response, 200, {
+    status: 'ok',
+    counts: { items: items.length, uploadedFiles },
+    uptimeSeconds: Math.floor(process.uptime()),
+    generatedAt: new Date().toISOString(),
+  });
+  return true;
+}
+
 function runUpload(request, response) {
   return new Promise((resolve, reject) => {
     upload.single('file')(request, response, (error) => error ? reject(error) : resolve());
@@ -235,6 +261,7 @@ async function serveStatic(response, pathname) {
 const server = http.createServer(async (request, response) => {
   try {
     const { pathname } = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+    if (await handleStats(request, response, pathname)) return;
     if (await handleUploads(request, response, pathname)) return;
     if (await handleApi(request, response, pathname)) return;
     if (request.method === 'GET' && await serveStatic(response, pathname)) return;
@@ -251,4 +278,4 @@ if (require.main === module) {
   server.listen(PORT, () => console.log(`CRUD app running at http://localhost:${PORT}`));
 }
 
-module.exports = { server, validateItem, safeUploadName, resolveUploadPath };
+module.exports = { server, validateItem, safeUploadName, resolveUploadPath, handleStats };

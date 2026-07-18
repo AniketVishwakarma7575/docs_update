@@ -1,0 +1,63 @@
+name: AI documentation sync
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - README.md
+      - API_DOCS.md
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ai-docs-main
+  cancel-in-progress: false
+
+jobs:
+  update-documentation:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Generate documentation with OpenAI
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.5' }}
+        run: node scripts/generate-ai-docs.js
+
+      - name: Sync API documentation to Google Docs
+        env:
+          GOOGLE_DOC_ID: ${{ secrets.GOOGLE_DOC_ID }}
+          GOOGLE_SA_KEY_BASE64: ${{ secrets.GOOGLE_SA_KEY_BASE64 }}
+        run: node scripts/sync-google-doc.js
+
+      - name: Commit generated Markdown
+        run: |
+          if git diff --quiet -- README.md API_DOCS.md; then
+            echo "Documentation is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md API_DOCS.md
+          git commit -m "docs: update API documentation [skip ci]"
+          git push origin HEAD:main

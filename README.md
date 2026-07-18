@@ -40,4 +40,8 @@ Create/update JSON body:
 ```json
 { "name": "Example", "description": "Optional details" }
 ```
+
+### Application statistics
+
+- `GET /api/stats` — return service status, item count, uploaded-file count, uptime, and generation timestamp
 # docs_update
